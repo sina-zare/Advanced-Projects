@@ -46,8 +46,8 @@ def decryptor(enc_env_var, key_env_var):
 ################ Data Gathering #################
 
 # Credentials
-username = 'sina.z@abramad.com'
-password = decryptor("enc_sinaz_pass", "key_sinaz_pass")
+username = 'username'
+password = decryptor("encrypted_variable", "key_variable")
 
 # Ignore the warning
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -57,11 +57,11 @@ context = ssl.SSLContext(ssl.PROTOCOL_TLS)
 context.verify_mode = ssl.CERT_NONE
 
 # Connecting to vCenter
-me_vc = connect.SmartConnect(host='me-vc01.abramad.com', user=username, pwd=password, port=443, sslContext=context)
+me_vc = connect.SmartConnect(host='your.vcenter.address', user=username, pwd=password, port=443, sslContext=context)
 me_content = me_vc.RetrieveContent()
 me_vm_view = me_content.viewManager.CreateContainerView(me_content.rootFolder, [vim.VirtualMachine], True)
 me_vms = [vm for vm in me_vm_view.view if
-          (vm.name.startswith("MER-")) or (vm.name.startswith("MERD-")) or (vm.name.startswith("MEA-"))]
+          (vm.name.startswith("any-naming-format"))]
 sorted_vms = sorted(me_vms, key=lambda vm: vm.name.lower())
 
 live_vms_all_dict = {}
@@ -77,7 +77,7 @@ sorted_vms_fnl = []
 
 # Pruning VM list
 for vm in sorted_vms:
-    if not vm.name.lower().endswith('-t') and not vm.name.lower().endswith('-db'):
+    if not vm.name.lower().endswith('any-naming-format') and not vm.name.lower().endswith('any-naming-format'):
         sorted_vms_fnl.append(vm)
 
 for vm in sorted_vms_fnl:
@@ -96,7 +96,7 @@ for vm in sorted_vms_fnl:
 
         if not_monitored != '1' and in_debt != '1':
 
-            # Get VM Creation Date
+            # Get VM Creation Date --> requires setting custom attributes in vcenter
             vm_creation_date = ""
             custom_value_d = vm.summary.customValue
             for i in custom_value_d:
@@ -105,7 +105,7 @@ for vm in sorted_vms_fnl:
 
             # Check if app is deployed
             if days_between_persian_dates(vm_creation_date) > 20:
-                # Get VM URL
+                # Get VM URL --> requires setting custom attributes in vcenter
                 vm_url = ""
                 vm_custom_attr = vm.summary.customValue
                 for i in vm_custom_attr:
@@ -118,14 +118,14 @@ for vm in sorted_vms_fnl:
                     if not vm_url.lower().strip().startswith('http'):
                         vm_url = 'https://' + vm_url.lower().strip()
 
-                    # Get VM Persian Name
+                    # Get VM Persian Name --> requires setting custom attributes in vcenter
                     vm_persian_name = ""
                     custom_value_n = vm.summary.customValue
                     for i in custom_value_n:
                         if i.key == 103:
                             vm_persian_name = i.value
 
-                    # Get VM Public IP
+                    # Get VM Public IP --> requires setting custom attributes in vcenter
                     vm_public_ip = ""
                     vm_custom_attr = vm.summary.customValue
                     for i in vm_custom_attr:
@@ -142,7 +142,7 @@ Disconnect(me_vc)
 #################################################
 ############ Comparison Calculation #############
 
-with open("C:\\Users\\sina.z\\Desktop\\Python-Projects\\uptime-kuma-db.txt", 'r') as file:
+with open("path\\to\\your\\file\\uptime-kuma-db.txt", 'r') as file:
     for row in file:
         db_vms_set.add(row.rstrip('\n'))
 
@@ -218,7 +218,7 @@ elif len(db_vms_set) == len(live_vms_set) and db_vms_set != live_vms_dict:
 ##################################################
 ############ Saving Altered Database #############
 
-with open("C:\\Users\\sina.z\\Desktop\\Python-Projects\\uptime-kuma-db.txt", 'w') as file:
+with open("path\\to\\your\\file\\uptime-kuma-db.txt", 'w') as file:
     for item in db_vms_set:
         file.write(item + '\n')
 
@@ -227,8 +227,8 @@ with open("C:\\Users\\sina.z\\Desktop\\Python-Projects\\uptime-kuma-db.txt", 'w'
 ##################################################
 ######### Adding/Deleting Nodes in Kuma ##########
 
-api = UptimeKumaApi('http://192.168.175.48:3007/')
-api.login('admin', 'I4=t8K<xn')
+api = UptimeKumaApi('https://your.kuma.address')
+api.login('kuma-username', 'kuma-password')
 # Fetch all monitors
 monitors = api.get_monitors()
 
@@ -262,7 +262,7 @@ for node in addition_dict:
         mea_dict[f'{node}'] = addition_dict[f'{node}']
 
 
-# MER Addition
+# MER Addition --> HTTP.KEYWORD
 for node in mer_dict:
     name = mer_dict[f'{node}'][0]
     url = mer_dict[f'{node}'][1]
@@ -282,7 +282,7 @@ for node in mer_dict:
         "maxredirects": 10,
         "accepted_statuscodes": ['200-299'],
         "description": f"{desc}",
-        "notificationIDList": [1, 2]  # Enable Telegram Notification
+        "notificationIDList": [1, 2]  # Enable Telegram and SMTP Notification
     }
 
     try:
@@ -296,7 +296,7 @@ for node in mer_dict:
 
 
 
-# MEA Addition
+# MEA Addition --> HTTP.STATUS
 for node in mea_dict:
     name = mea_dict[f'{node}'][0]
     url = mea_dict[f'{node}'][1]
@@ -315,14 +315,14 @@ for node in mea_dict:
         "ignoreTls": True,
         "accepted_statuscodes": ['200-299'],
         "description": f"{desc}",
-        "notificationIDList": [1, 2]  # Enable Telegram Notification
+        "notificationIDList": [1, 2]  # Enable Telegram and SMTP Notification
     }
 
     try:
         result = api.add_monitor(**mea_monitor_config)
         print(result, end=' : ')
         print(name)
-        time.sleep(0.5)
+        time.sleep(0.5)  # Just giving the DB a little time to breathe
     except Exception as err:
         print(err)
 
@@ -333,10 +333,10 @@ api.disconnect()
 ##################################
 ######### Sending Email ##########
 
-recievers = "support@abramad.com"
-cc = "mehdi.a@abramad.com, alireza.ja@abramad.com"
+recievers = "support@company.com"
+cc = "cc1@company.com, cc2@company.com"
 
-def email_sender(username, password, email_receivers, email_cc, subject, direction, html_body, mail_server='mail.abramad.com'):
+def email_sender(username, password, email_receivers, email_cc, subject, direction, html_body, mail_server='mail.company.com'):
 
     try:
         # Create a multipart message object
@@ -400,4 +400,4 @@ html_body = f"""
 """
 
 if len(addition_dict) > 0 or len(deletion_list) > 0:
-    email_sender(username, password, recievers, cc, subject, 'ltr', html_body, "mail.systemgroup.net")
+    email_sender(username, password, recievers, cc, subject, 'ltr', html_body, "mail.company2.com")
