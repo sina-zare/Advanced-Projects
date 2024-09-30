@@ -30,8 +30,8 @@ def find_duplicates(major_list):
     return len(duplicates) > 0, duplicates
 
 
-api = UptimeKumaApi('http://172.29.6.102:8080/')
-api.login('admin', 'I4=t8K<xn')
+api = UptimeKumaApi('https://your.kuma.address')
+api.login('user', 'password')
 
 # Fetch all monitors
 monitors = api.get_monitors()
