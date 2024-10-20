@@ -1,4 +1,4 @@
-try:
+etry:
     from email.mime.multipart import MIMEMultipart
     from cryptography.fernet import Fernet
     from pyvim.connect import Disconnect
@@ -31,15 +31,14 @@ try:
         return decrypted_password.decode()
 
 
-    username = 'sina.z@abramad.com'
+    username = 'username'
     passphrase = decryptor("enc_sinaz_pass", "key_sinaz_pass")
-    default_receivers = 'support@abramad.com'
-    #default_cc = 'sina.z@abramad.com'
-    default_cc = 'alireza.ja@abramad.com,mehdi.a@abramad.com,soroush.m@abramad.com'
+    default_receivers = 'recipient@company.com'
+    default_cc = 'cc1@company.com,cc2@company.com'
 
 
     def email_sender(username, password, email_receivers, email_cc, subject, direction, html_body,
-                     mail_server='mail.systemgroup.net'):
+                     mail_server='mail.company.com'):
         try:
             # Create a multipart message object
             msg = MIMEMultipart()
@@ -111,7 +110,7 @@ try:
     context.verify_mode = ssl.CERT_NONE
 
     # Connecting to vCenter
-    vra_vc = connect.SmartConnect(host='vra-vc01.abramad.com', user=username, pwd=passphrase, port=443, sslContext=context)
+    vra_vc = connect.SmartConnect(host='vcenter.url.address', user=username, pwd=passphrase, port=443, sslContext=context)
     vra_content = vra_vc.RetrieveContent()
     vra_vm_view = vra_content.viewManager.CreateContainerView(vra_content.rootFolder, [vim.VirtualMachine], True)
     vra_vms = [vm for vm in vra_vm_view.view if (vm.name.startswith("VRA-"))]
@@ -127,7 +126,7 @@ try:
         for device in vm.config.hardware.device:
             if isinstance(device, vim.vm.device.VirtualEthernetCard):
                 # Checking if vm is in 'VRA-1003-Customers' PortGroup
-                if device.backing.port.portgroupKey == 'dvportgroup-7117' and vm.name.lower() != 'vra-amini2' and vm.name.lower() != 'vra-amini3' and vm.name.lower() != 'vra-demo' and not vm.name.lower().startswith('vra-haproxy'):
+                if device.backing.port.portgroupKey == 'dvportgroup-7117' and vm.name.lower() != 'vra-x' and vm.name.lower() != 'vra-y' and vm.name.lower() != 'vra-demo' and not vm.name.lower().startswith('vra-zzz'):
 
                     # VM Name
                     vm_name = vm.name.lower()
@@ -175,8 +174,8 @@ try:
     #  Gathering Data from Zabbix
 
     # Zabbix server credentials
-    zabbix_url = "http://zab.abramad.com/zabbix"
-    zabbix_user = "sina.z"
+    zabbix_url = "http://zabbix.address.url/zabbix"
+    zabbix_user = "username"
     zabbix_password = passphrase
 
     # Connect to Zabbix API
@@ -204,9 +203,9 @@ try:
 
     #  Taking Group and Template IDs
     # Template and Host Group
-    template_name = "Rahkaran-Abri-Tpl"     # Template name
-    host_group_name1 = "Rahkaran-Abri-Grp"  # Host group name
-    host_group_name2 = "ServiceDesk"        # Host group name
+    template_name = "example-Tpl"     # Template name
+    host_group_name1 = "Grp1"         # Host group name
+    host_group_name2 = "Grp2"         # Host group name
 
 
     # Step 1: Get the template ID
@@ -236,25 +235,6 @@ try:
     zabbix_nodes_disabled = []
     zabbix_nodes_deleted = []
 
-    """
-    with open('D:\\OneDrive\\Python Projects\\Zabbix_VRA\\zabbix_current_enabled_nodes_list', 'r') as zcen:
-        zab_cur_enbl_nodes_list_from_file = zcen.readlines()
-        zab_cur_enbl_nodes_list_from_file = set(
-            [item.strip().rstrip("\n") for item in zab_cur_enbl_nodes_list_from_file])
-
-    with open('D:\\OneDrive\\Python Projects\\Zabbix_VRA\\zabbix_current_enabled_nodes_count', 'r') as zcen:
-        zab_cur_enbl_nodes_count_from_file = zcen.readlines()
-        zab_cur_enbl_nodes_count_from_file = [item.strip().rstrip("\n") for item in zab_cur_enbl_nodes_count_from_file]
-
-    with open('D:\\OneDrive\\Python Projects\\Zabbix_VRA\\zabbix_current_disabled_nodes_list', 'r') as zcdn:
-        zab_cur_dsbl_nodes_list_from_file = zcdn.readlines()
-        zab_cur_dsbl_nodes_list_from_file = set([item.strip().rstrip("\n") for item in zab_cur_dsbl_nodes_list_from_file])
-
-    with open('D:\\OneDrive\\Python Projects\\Zabbix_VRA\\zabbix_current_enabled_nodes_count', 'r') as zcdn:
-        zab_cur_dsbl_nodes_count_from_file = zcdn.readlines()
-        zab_cur_dsbl_nodes_count_from_file = [item.strip().rstrip("\n") for item in zab_cur_dsbl_nodes_count_from_file]
-
-    """
 
     #  Comparison
     #  Zabbix Node Addition
@@ -263,7 +243,7 @@ try:
             try:
                 # Host information
                 host_name = vcenter_pon_vms[vc_pon][0]  # {HOST.HOST}
-                host_visible_name = vcenter_pon_vms[vc_pon][1].replace('https://', '').replace('.rahkaran.ir', '')  # {HOST.NAME}
+                host_visible_name = vcenter_pon_vms[vc_pon][1].replace('https://', '').replace('.company.com', '')  # {HOST.NAME}
                 host_desc = vcenter_pon_vms[vc_pon][2]  # Host Description
                 host_url = vcenter_pon_vms[vc_pon][1]  # Host URL
                 host_fqdn = vcenter_pon_vms[vc_pon][3]
